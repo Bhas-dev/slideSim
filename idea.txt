@@ -1,0 +1,16 @@
+Big Steps : 
+    Viewer
+    Physics Calculator (+ file generator)
+    Object class
+
+Viewer:
+    takes multiple files and outputs a visual
+    file 1 : our cube's movement
+    file 2 : landscape (stuff that doesn't move)
+    file 3 : info like initial values
+
+Physics Calculator:
+    gets multiple parameters as input and generates the 3 files as output
+
+Object Class:
+    gets the info to generate our moving object, by default a square i guess
