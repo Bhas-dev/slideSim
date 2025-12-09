@@ -8,8 +8,15 @@ class Object():
             self.initSquare(center = np.array([2.,3.]))
 
     def updateObject(self):
-        self.vertices_gnd = self.attitude @ self.vertices_bdy.T + self.center.reshape(2,1)
+        new_vertices_gnd = (self.attitude @ self.vertices_bdy.T).T
+
+        for r in range(len(new_vertices_gnd)):
+            new_vertices_gnd[r] += self.center
+
+        diff = new_vertices_gnd - self.vertices_gnd
+        self.vertices_gnd = new_vertices_gnd
         self.calculateHitbox()
+        return diff
         
     def initSquare(self, center, attitude = np.array([[1,0], [0,1]]) ):
         """takes a file as input, finds a way to draw 2d object from it, square by default"""
