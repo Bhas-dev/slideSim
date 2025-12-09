@@ -19,3 +19,4 @@ class Object():
             self.hitbox = [L1, L2, L3, L4] # list of segments in body frame, in the future, a function should calculate this bounding box
     
     def updateObject(self):
+        cacaaaaa
