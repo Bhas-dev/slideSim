@@ -19,7 +19,7 @@
 #
 
 import numpy as np
-
+from src.square import *
 from graphics import *
 from dynamics import *
 from geom import *
@@ -83,7 +83,26 @@ def dynamicTest(viewer):
     # Each frame will perform a call to the 'step' method of the viewer
     viewer.addDynamicSystem(dyn)
     
+def rotatingSquare(viewer):
+    """
+    @brief Demonstration for a basic dynamic rendering
+           Renders a simple square, moved by a dummy dynamic system
+    """
 
+    # Indexed square
+    square_inst = Square()
+    # Create the object
+    squareMesh = Mesh2D(square_inst.getPositions(), square_inst.indices, square_inst.colours)
+    # Create the correspondung GPU object
+    squareMeshRenderable = Mesh2DRenderable(squareMesh)
+    # Add it to the list of objects to render
+    viewer.addRenderable(squareMeshRenderable)
+
+    # Create a dynamic system
+    dyn = DummyDynamicSystem(squareMesh)
+    # And add it to the viewer
+    # Each frame will perform a call to the 'step' method of the viewer
+    viewer.addDynamicSystem(dyn)
 
 def rodTest(viewer):
 
