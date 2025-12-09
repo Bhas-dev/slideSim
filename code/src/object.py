@@ -4,18 +4,24 @@ class Object():
     def __init__(self, filename = None):
         """takes a file as input, finds a way to draw 2d object from it, square by default"""
         if filename is None: # square with uniform weight distribution
-            L = 5 #cm
             self.mass = 3 #kg
-            self.center = np.array([0,0,0]) # center position in unmoving frame
-            self.attitude = np.array([[1,0,0], [0,1,0], [0,0,1]]) #body to unmoving frame, attitude = attitude @ rotation
-            A = np.array([[-L/2],[-L/2],[0]])
-            B = np.array([[-L/2],[L/2],[0]])
-            C = np.array([[L/2],[L/2],[0]])
-            D = np.array([[L/2],[-L/2],[0]])
-            L1 = (A, B)
-            L2 = (B, C)
-            L3 = (C, D)
-            L4 = (D, A) #this one might be redundant, since it's just the last point linked to the first one
+            self.center = np.array([2,3]) # center position in unmoving frame
+            self.attitude = np.array([[1,0], [0,1]]) #body to unmoving frame, attitude = attitude @ rotation
+            self.vertices_gnd
+            self.vertices_bdy = np.array([0., 0.,   # x0, y0
+                                       1., 0.,   # x1, y1
+                                       0., 1.,   # x2, y2
+                                       1., 1.],  # x3, y3
+                                  np.float64)
+            colours = np.array([1., 0., 0.,  # (r, g, b) for vertex 0
+                                0., 0., 1.,  # (r, g, b) for vertex 1
+                                0., 1., 0.,  # ...
+                                1., 1., 1.]) # ...
+            indices = np.array([0, 1, 2,   # First triangle composed by vertices 0, 1 and 2
+                                1, 2, 3])  # Second triangle composed by vertices 1, 2 and 3
             self.hitbox = [L1, L2, L3, L4] # list of segments in body frame, in the future, a function should calculate this bounding box
-    
+
     def updateObject(self):
+        self.vertices_gnd = self.
+
+
