@@ -22,6 +22,8 @@ class Object():
             self.hitbox = [L1, L2, L3, L4] # list of segments in body frame, in the future, a function should calculate this bounding box
 
     def updateObject(self):
-        self.vertices_gnd = self.
+        self.vertices_gnd = self.attitude @ self.vertices_bdy.reshape(-1,2).T + self.center.reshape(2,1)
+        calculateHitbox(self)
+        
 
 
