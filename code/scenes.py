@@ -91,13 +91,13 @@ def rotatingSquare(viewer):
 
     # Indexed square
     square_inst = Square()
+    print(square_inst.vertices_gnd, square_inst.center)
     # Create the object
     squareMesh = Mesh2D(square_inst.getPositions(), square_inst.indices, square_inst.colours)
     # Create the correspondung GPU object
     squareMeshRenderable = Mesh2DRenderable(squareMesh)
     # Add it to the list of objects to render
     viewer.addRenderable(squareMeshRenderable)
-
     # Create a dynamic system
     dyn = DummyDynamicSystem(squareMesh)
     # And add it to the viewer

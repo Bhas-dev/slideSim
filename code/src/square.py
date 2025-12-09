@@ -24,10 +24,10 @@ class Square():
         self.mass = 3 #kg
         self.center = center # center position in unmoving frame
         self.attitude = attitude #body to unmoving frame, new_attitude = attitude @ rotation
-        self.vertices_bdy = np.array([[0., 0.],   # x0, y0
-                                    [1., 0.],   # x1, y1
-                                    [0., 1.],   # x2, y2
-                                    [1., 1.]],  # x3, y3
+        self.vertices_bdy = np.array([[-0.5, -0.5],   # x0, y0
+                                    [-0.5, 0.5],   # x1, y1
+                                    [0.5, 0.5],   # x2, y2
+                                    [0.5, -0.5]],  # x3, y3
                                 np.float64)
         self.vertices_gnd = (self.attitude @ self.vertices_bdy.T).T
         for r in range(len(self.vertices_gnd)):
@@ -37,7 +37,7 @@ class Square():
                             0., 1., 0.,  # ...
                             1., 1., 1.]) # ...
         self.indices = np.array([0, 1, 2,   # First triangle composed by vertices 0, 1 and 2
-                            1, 2, 3])  # Second triangle composed by vertices 1, 2 and 3
+                            0, 2, 3])  # Second triangle composed by vertices 1, 2 and 3
         self.hitbox = [] # list of segments in body frame, in the future, a function should calculate this bounding box
     
 
