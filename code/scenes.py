@@ -99,7 +99,7 @@ def rotatingSquare(viewer):
     # Add it to the list of objects to render
     viewer.addRenderable(squareMeshRenderable)
     # Create a dynamic system
-    dyn = DummyDynamicSystem(squareMesh)
+    dyn = DummyDynamicSystem(squareMesh, square_inst)
     # And add it to the viewer
     # Each frame will perform a call to the 'step' method of the viewer
     viewer.addDynamicSystem(dyn)
