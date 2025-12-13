@@ -40,7 +40,7 @@ class DummyDynamicSystem(AbstractDynamicSystem):
         self.colours = np.copy(self.mesh.constColours)
         self.translationVector = np.tile([0.01, 0], self.mesh.nbVertices)
 
-    def step(self, square):
+    def step(self):
         self.mesh.colours = (self.it / self.period) * self.colours
         self.mesh.positions += self.obj.updateObject().flatten()
         print(self.obj.center)
