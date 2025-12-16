@@ -24,10 +24,11 @@ class Square():
         self.attitude = attitude
         return diff
         
-    def initSquare(self, center, attitude = np.array([[1,0], [0,1]]) ):
+    def initSquare(self, center, adhesion = 0.5, attitude = np.array([[1,0], [0,1]]) ):
         """takes a file as input, finds a way to draw 2d object from it, square by default"""
         
         self.mass = 3 #kg
+        self.adhesion_coeff = adhesion
         self.center = center # center position in unmoving frame
         self.attitude = attitude #body to unmoving frame, new_attitude = attitude @ rotation
         self.vertices_bdy = np.array([[-0.5, -0.5],   # x0, y0
