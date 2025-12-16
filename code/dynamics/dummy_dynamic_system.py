@@ -21,6 +21,7 @@
 import numpy as np
 
 from .abstract_dynamic_system import AbstractDynamicSystem
+from calculator import Calculator
 
 ## Dummy dynamic system just to test
 class DummyDynamicSystem(AbstractDynamicSystem):
@@ -32,6 +33,7 @@ class DummyDynamicSystem(AbstractDynamicSystem):
         super().__init__()
         self.mesh = mesh
         self.obj = obj
+        self.calculator = Calculator()
 
         # Animations parameters
         self.it = 120.
@@ -44,3 +46,14 @@ class DummyDynamicSystem(AbstractDynamicSystem):
         self.mesh.colours = (self.it / self.period) * self.colours
         self.mesh.positions += self.obj.updateObject().flatten()
         print(self.obj.center)
+
+    # (Conceptual update to DummyDynamicSystem.step)
+    """
+    def step(self):
+        # 1. Get the net force on the object
+
+        # 3. Apply the results to the object's state
+        self.obj.center = new_pos
+        self.obj.velocity = new_vel
+        
+        # ... then handle collision and update mesh positions"""

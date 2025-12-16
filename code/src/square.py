@@ -6,14 +6,21 @@ class Square():
     def __init__(self, filename = None):
         """takes a file as input, finds a way to draw 2d object from it, square by default"""
         if filename is None: # square with uniform weight distribution
-            
             self.initSquare(center = np.array([0.5,0.5]))
 
     def updateObject(self):
+        net_force = Calculator().calculateForces(self) 
+        self.center, self.velocity = Calculator.integrate_motion(
+            mass=self.mass,
+            current_position=self.center,
+            current_velocity=self.velocity,
+            net_force=net_force,
+            dt=0.01
+        )
 
-        attitude = Calculator().rotate(self.attitude, np.pi/6)
+        #attitude = Calculator().rotate(self.attitude, np.pi/6)
 
-        new_vertices_gnd = (attitude @ self.vertices_bdy.T).T
+        new_vertices_gnd = (self.attitude @ self.vertices_bdy.T).T
 
         for r in range(len(new_vertices_gnd)):
             new_vertices_gnd[r] += self.center
@@ -21,7 +28,6 @@ class Square():
         diff = new_vertices_gnd - self.vertices_gnd
         self.vertices_gnd = new_vertices_gnd
         self.calculateHitbox()
-        self.attitude = attitude
         return diff
         
     def initSquare(self, center, attitude = np.array([[1,0], [0,1]]) ):
@@ -30,6 +36,7 @@ class Square():
         self.mass = 3 #kg
         self.center = center # center position in unmoving frame
         self.attitude = attitude #body to unmoving frame, new_attitude = attitude @ rotation
+        self.velocity = np.array([.0,.0])
         self.vertices_bdy = np.array([[-0.5, -0.5],   # x0, y0
                                     [-0.5, 0.5],   # x1, y1
                                     [0.5, 0.5],   # x2, y2
