@@ -29,10 +29,6 @@ class Calculator:
         else:
             drag_direction = np.array([0.0, 0.0])
         return drag_magnitude * drag_direction
-    
-
-    
-
 
 
     def rotate(self, orientation, angle):
@@ -42,7 +38,7 @@ class Calculator:
     
     def calculateForces(self, obj):
         weight = np.array([0, -9.81*obj.mass]) # N
-        resulting_force = weight
+        resulting_force = weight + self.air_resistance(obj)
         return resulting_force
 
     @staticmethod

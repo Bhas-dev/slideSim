@@ -23,6 +23,7 @@ from src.square import *
 from graphics import *
 from dynamics import *
 from geom import *
+from src.circleObject import *
 
 
 
