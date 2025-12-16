@@ -15,7 +15,9 @@ class Calculator:
         R = np.array([[c, -s], [s, c]])
         return R @ orientation
     
-    def calculate_forces(self, obj):
+    def calculateForces(self, obj):
         weight = np.array([0, -9.81*obj.mass]) # N
         resulting_force = weight
         return resulting_force
+
+    def convertToMovement(self, )
