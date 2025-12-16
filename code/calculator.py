@@ -45,5 +45,36 @@ class Calculator:
         resulting_force = weight
         return resulting_force
 
-    def convertToMovement(self, ):
-        pass
+    @staticmethod
+    def integrate_motion(mass, current_position, current_velocity, net_force, dt):
+        """
+        Performs one step of Forward Euler integration (time-stepping).
+        
+        This method is the standard way to numerically go from a sum of forces 
+        to an object's new position and velocity.
+
+        Args:
+            mass (float): The mass of the object.
+            current_position (np.array): The object's current 2D position (center).
+            current_velocity (np.array): The object's current 2D velocity.
+            net_force (np.array): The sum of forces acting on the object (2D vector).
+            dt (float): The time step duration (e.g., 1.0/60.0 for 60 FPS).
+
+        Returns:
+            tuple: (new_position, new_velocity)
+        """
+        # 1. Calculate Acceleration (a = F/m)
+        # Handle division by zero for static objects (mass=0) gracefully
+        if mass == 0:
+            return current_position, current_velocity
+        
+        acceleration = net_force / mass
+        
+        # 2. Update Velocity (v_new = v_old + a*dt)
+        new_velocity = current_velocity + acceleration * dt
+        
+        # 3. Update Position (p_new = p_old + v_new*dt)
+        # Using the new velocity for position update is often called Semi-Implicit Euler
+        new_position = current_position + new_velocity * dt
+        
+        return new_position, new_velocity
