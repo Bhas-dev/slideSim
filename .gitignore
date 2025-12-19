@@ -1,2 +1,6 @@
 venv/
 code/__pycache__/
+code/dynamics/__pycache__/
+code/geom/__pycache__/
+code/graphics/__pycache__/
+code/src/__pycache__/
