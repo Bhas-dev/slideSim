@@ -1,12 +1,8 @@
 import numpy as np
 
-from calculator import Calculator
-
-class Square():
-    def __init__(self, filename = None):
-        """takes a file as input, finds a way to draw 2d object from it, square by default"""
-        if filename is None: # square with uniform weight distribution
-            self.initSquare(center = np.array([0.5,0.5]))
+class Floor():
+    def __init__(self):
+        self.initSquare(center = np.array([0.5,0.5]))
 
     def updateObject(self):
         net_force = Calculator().calculateForces(self) 
@@ -32,15 +28,15 @@ class Square():
         
     def initSquare(self, center, attitude = np.array([[1,0], [0,1]]) ):
         """takes a file as input, finds a way to draw 2d object from it, square by default"""
-        L = 0.25
+        
         self.mass = 3 #kg
         self.center = center # center position in unmoving frame
         self.attitude = attitude #body to unmoving frame, new_attitude = attitude @ rotation
         self.velocity = np.array([.0,.0])
-        self.vertices_bdy = np.array([[-L/2, -L/2],   # x0, y0
-                                    [-L/2, L/2],   # x1, y1
-                                    [L/2, L/2],   # x2, y2
-                                    [L/2, -L/2]],  # x3, y3
+        self.vertices_bdy = np.array([[-0.5, -0.5],   # x0, y0
+                                    [-0.5, 0.5],   # x1, y1
+                                    [0.5, 0.5],   # x2, y2
+                                    [0.5, -0.5]],  # x3, y3
                                 np.float64)
         self.vertices_gnd = (self.attitude @ self.vertices_bdy.T).T
         for r in range(len(self.vertices_gnd)):
