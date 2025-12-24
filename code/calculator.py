@@ -4,6 +4,14 @@ G = 9.81 #m.s-1
 
 
 class Calculator:
+
+    def __init__(self):
+        self.objects = []
+    
+    def addObject(self, obj):
+        self.objects.append(obj)
+        return len(self.objects) - 1
+
     def move(self):
         return np.array([0.01, 0])
     
@@ -16,7 +24,6 @@ class Calculator:
     def friction_force(self, obj, friction_coef):
         angle = np.arctan2(obj.attitude[1][0], obj.attitude[0][0])
         return (- friction_coef * obj.mass * G * np.cos(angle) * obj.velocity/np.linalg.norm(obj.velocity))
-
 
     def air_resistance(self, obj):
         drag_coef = 0.47 #spherical object
@@ -38,7 +45,7 @@ class Calculator:
     
     def calculateForces(self, obj):
         weight = np.array([0, -9.81*obj.mass]) # N
-        resulting_force = weight + self.air_resistance(obj)
+        resulting_force = weight + self.air_resistance(obj) # adding all forces
         return resulting_force
 
     @staticmethod

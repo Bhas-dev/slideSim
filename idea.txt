@@ -14,3 +14,6 @@ Physics Calculator:
 
 Object Class:
     gets the info to generate our moving object, by default a square i guess
+
+all objects will have an assigned nb which corresponds to their idx in a list given inside calculator which contains all objects
+all objects should have a calculator object that corresponds to the same calculator

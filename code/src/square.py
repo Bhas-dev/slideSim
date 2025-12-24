@@ -4,18 +4,17 @@ from calculator import Calculator
 from src.dynamicObject import DynamicObject
 
 class Square(DynamicObject):
-    def __init__(self, mass = 3, center = np.array([0.5,0.5]) , static=False, attitude = np.array([[1,0], [0,1]]), adhesion = 0.5):
+    def __init__(self, calc, L = 0.25, mass = 3, center = np.array([0,0]), attitude = np.array([[1,0], [0,1]]), adhesion = 0.5):
 
-        super().__init__(mass, center, static)
+        super().__init__(mass, center, calc, velocity = np.array([.0,.0]))
         """takes a file as input, finds a way to draw 2d object from it, square by default"""
-        
+        self.size = L
         self.adhesion_coeff = adhesion
-        self.attitude = attitude #body to unmoving frame, new_attitude = attitude @ rotation
-        self.velocity = np.array([.0,.0])
-        self.vertices_bdy = np.array([[-0.5, -0.5],   # x0, y0
-                                    [-0.5, 0.5],   # x1, y1
-                                    [0.5, 0.5],   # x2, y2
-                                    [0.5, -0.5]],  # x3, y3
+        self.attitude = attitude # body to unmoving frame, new_attitude = attitude @ rotation
+        self.vertices_bdy = np.array([[-L/2, -L/2],   # x0, y0
+                                    [-L/2, L/2],   # x1, y1
+                                    [L/2, L/2],   # x2, y2
+                                    [L/2, -L/2]],  # x3, y3
                                 np.float64)
         self.vertices_gnd = (self.attitude @ self.vertices_bdy.T).T
         for r in range(len(self.vertices_gnd)):
@@ -26,40 +25,12 @@ class Square(DynamicObject):
                             1., 1., 1.]) # ...
         self.indices = np.array([0, 1, 2,   # First triangle composed by vertices 0, 1 and 2
                             0, 2, 3])  # Second triangle composed by vertices 1, 2 and 3
-        self.hitbox = [] # list of segments in body frame, in the future, a function should calculate this bounding box
+        self.hitbox = [] # list of segments in body frame, list of 2*2 numpy arrays
         self.calculateHitbox()
 
 
 
-    def updateObject(self):
-        net_force = Calculator().calculateForces(self) 
-        self.center, self.velocity = Calculator.integrate_motion(
-            mass=self.mass,
-            current_position=self.center,
-            current_velocity=self.velocity,
-            net_force=net_force,
-            dt=0.01
-        )
-
-        #attitude = Calculator().rotate(self.attitude, np.pi/6)
-
-        new_vertices_gnd = (self.attitude @ self.vertices_bdy.T).T
-
-        for r in range(len(new_vertices_gnd)):
-            new_vertices_gnd[r] += self.center
-
-        diff = new_vertices_gnd - self.vertices_gnd
-        self.vertices_gnd = new_vertices_gnd
-        self.calculateHitbox()
-        return diff
-        
-        
     
-
-    def calculateHitbox(self):
-        self.hitbox.clear()
-        for i in range(len(self.vertices_gnd)//2-2):
-            self.hitbox.append(self.vertices_gnd[2*i:2*(i+2)])
     
     def getPositions(self):
         return self.vertices_gnd.flatten()
