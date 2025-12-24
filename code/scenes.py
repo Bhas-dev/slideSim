@@ -20,6 +20,7 @@
 
 import numpy as np
 from src.square import *
+from src.floor import *
 from graphics import *
 from dynamics import *
 from geom import *
@@ -93,6 +94,7 @@ def rotatingSquare(viewer):
     # Indexed square
     calc = Calculator()
     square_inst = Square(calc)
+    floor_inst = Floor(calc)
     print(square_inst.vertices_gnd, square_inst.center)
     # Create the object
     squareMesh = Mesh2D(square_inst.getPositions(), square_inst.indices, square_inst.colours)
@@ -100,6 +102,11 @@ def rotatingSquare(viewer):
     squareMeshRenderable = Mesh2DRenderable(squareMesh)
     # Add it to the list of objects to render
     viewer.addRenderable(squareMeshRenderable)
+
+
+    floorMesh = Mesh2D(floor_inst.getPositions(), floor_inst.indices, floor_inst.colours)
+    floorMeshRenderable = Mesh2DRenderable(floorMesh)
+    viewer.addRenderable(floorMeshRenderable)
     # Create a dynamic system
     dyn = DummyDynamicSystem(squareMesh, square_inst)
     # And add it to the viewer

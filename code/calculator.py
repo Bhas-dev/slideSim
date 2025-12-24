@@ -67,8 +67,7 @@ class Calculator:
             tuple: (new_position, new_velocity)
         """
         # 1. Calculate Acceleration (a = F/m)
-        # Handle division by zero for static objects (mass=0) gracefully
-        if mass == 0:
+        if mass == 0: #static objects
             return current_position, current_velocity
         
         acceleration = net_force / mass

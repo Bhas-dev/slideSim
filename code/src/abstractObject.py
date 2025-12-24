@@ -7,9 +7,8 @@ class AbstractObject(ABC):
         self.static = static
         self.calculator = calc
         self.calcIdx = self.calculator.addObject(self)
-    
-    @abstractmethod
-    def updateObject(self):
-        """Initiates the objects"""
-        pass
+
+    @abstractmethod 
+    def getPositions(self):
+        return
 

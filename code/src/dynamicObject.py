@@ -3,7 +3,7 @@ import numpy as np
 
 class DynamicObject(AbstractObject):
 
-    def __init__(self, mass, center, calc, velocity):
+    def __init__(self, mass, center, calc, velocity = np.array([.0, .0])):
         super().__init__(mass, center, calc)
         self.velocity = velocity
 
@@ -34,4 +34,7 @@ class DynamicObject(AbstractObject):
         self.hitbox.clear()
         for i in range(len(self.vertices_gnd)//2-2):
             self.hitbox.append(self.vertices_gnd[2*i:2*(i+2)])
+    
+    def getPositions(self):
+        return self.vertices_gnd.flatten()
 
