@@ -8,7 +8,11 @@ class AbstractObject(ABC):
         self.calculator = calc
         self.calcIdx = self.calculator.addObject(self)
 
-    @abstractmethod 
+    def calculateHitbox(self):
+        self.hitbox.clear()
+        for i in range(self.nbVertices):
+            self.hitbox.append([self.vertices_gnd[i], self.vertices_gnd[(i+1)%self.nbVertices]])
+
     def getPositions(self):
-        return
+        return self.vertices_gnd.flatten()
 

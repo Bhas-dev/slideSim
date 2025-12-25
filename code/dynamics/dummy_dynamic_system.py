@@ -21,7 +21,6 @@
 import numpy as np
 
 from .abstract_dynamic_system import AbstractDynamicSystem
-from calculator import Calculator
 
 ## Dummy dynamic system just to test
 class DummyDynamicSystem(AbstractDynamicSystem):
@@ -33,7 +32,6 @@ class DummyDynamicSystem(AbstractDynamicSystem):
         super().__init__()
         self.mesh = mesh
         self.obj = obj
-        self.calculator = Calculator()
 
         # Animations parameters
         self.it = 120.

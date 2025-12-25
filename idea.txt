@@ -17,3 +17,7 @@ Object Class:
 
 all objects will have an assigned nb which corresponds to their idx in a list given inside calculator which contains all objects
 all objects should have a calculator object that corresponds to the same calculator
+
+to check hitbox intersection : 
+
+check shape for concaveness and seperate it into as many convexe subshapes as necessary
