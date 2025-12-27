@@ -19,7 +19,7 @@
 #
 
 import numpy as np
-from src.square import *
+from src.rectangle import *
 from src.floor import *
 from graphics import *
 from dynamics import *
@@ -95,7 +95,6 @@ def rotatingSquare(viewer):
     calc = Calculator()
     square_inst = Square(calc)
     floor_inst = Floor(calc)
-    print(square_inst.vertices_gnd, square_inst.center)
     # Create the object
     squareMesh = Mesh2D(square_inst.getPositions(), square_inst.indices, square_inst.colours)
     # Create the correspondung GPU object

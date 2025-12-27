@@ -43,7 +43,6 @@ class DummyDynamicSystem(AbstractDynamicSystem):
     def step(self):
         self.mesh.colours = (self.it / self.period) * self.colours
         self.mesh.positions += self.obj.updateObject().flatten()
-        print(self.obj.center)
 
     # (Conceptual update to DummyDynamicSystem.step)
     """

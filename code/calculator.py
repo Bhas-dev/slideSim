@@ -17,12 +17,15 @@ class Calculator:
         return np.array([0.01, 0])
     
     def Gravity(self, obj):
+        """ Calculates the gravitational force acting on the object."""
         return (obj.mass * G) * np.array([0, -1]) #m*g*vect(-y)
     
     def friction_coef(self, obj1, obj2):
+        """ Calculates the friction coefficient between two objects."""
         return (0.05 + 0.8 * min(obj1.adhesion_coeff, obj2.adhesion_coeff))
     
     def friction_force(self, obj, friction_coef):
+        """ Calculates the friction force acting on the object."""
         angle = np.arctan2(obj.attitude[1][0], obj.attitude[0][0])
         return (- friction_coef * obj.mass * G * np.cos(angle) * obj.velocity/np.linalg.norm(obj.velocity))
 
@@ -32,7 +35,7 @@ class Calculator:
         Returns: (bool, collision_data)
         collision_data = {'depth': float, 'normal': np.array([x, y])}
         """
-        max_penetration = -1.0
+        max_penetration = -0.0001
         best_normal = np.array([0.0, 0.0])
         collision_detected = False
 
@@ -65,7 +68,7 @@ class Calculator:
                     # We found a penetration!
                     penetration = abs(distance)
                     if penetration > max_penetration:
-                        max_penetration = penetrationect
+                        max_penetration = penetration
                         # The normal should point AWAY from the surface
                         best_normal = normal 
                         collision_detected = True
@@ -77,11 +80,11 @@ class Calculator:
 
     def intersectFloor(self, obj, floor_inst):
         """ normal reaction against floor, we'll be assuming flat floor """
-        max_penetration = -0.25
+        max_penetration = -0.0001
         best_normal = np.array([0.0, 0.0])
         collision_detected = False
+        contact_points = []
         line = floor_inst.hitbox[1]
-        print("line : ", line)
 
         for vertex in obj.vertices_gnd:
             # Edge segment defined by points p1 and p2
@@ -105,19 +108,21 @@ class Calculator:
             # If distance is negative, the point is "inside" the surface
             distance = np.dot(p1_to_v, normal)
             
-            if distance < 0:
+            if distance <= 0:
                 # We found a penetration!
                 penetration = abs(distance)
-                if penetration > max_penetration:
+                if penetration >= max_penetration:
                     max_penetration = penetration
                     collision_detected = True
+                    contact_points.append(vertex)
 
         if collision_detected:
-            return True, [max_penetration, normal]
+            return True, [max_penetration, normal, contact_points]
         
         return False, None
 
     def air_resistance(self, obj):
+        """ Calculates the air resistance (drag) force acting on the object."""
         drag_coef = 0.47 #spherical object
         air_density = 1.225 #kg/m3
         area = 1.0 #m2, next time get actual value
@@ -137,11 +142,14 @@ class Calculator:
     
     def calculateForces(self, obj):
         weight = np.array([0, -9.81*obj.mass]) # N
-        resulting_force = weight + self.air_resistance(obj) + self.calculateInteractions(obj)# adding all forces
-        return resulting_force
+        interactions = self.calculateInteractions(obj)
+        resulting_force = weight + self.air_resistance(obj) + interactions[0] # adding all forces
+        resulting_torque = interactions[1]
+        return resulting_force, resulting_torque
     
     def calculateInteractions(self, obj):
-        reaction = np.array([.0,.0])
+        reaction_force = np.array([.0,.0])
+        reaction_torque = 0.0
         stiffness = 5000.0 # hardness
         damping = 100.0 # reduce bounce
         for r in range(len(self.objects)):
@@ -151,31 +159,50 @@ class Calculator:
             if isinstance(other, Floor):
                 is_touching, collision_info = self.intersectFloor(obj, other)
                 if is_touching:
-                    print("hiaaa")
                     depth = collision_info[0]
                     normal = collision_info[1]
-                    v_rel = obj.velocity
-                    v_normal = np.dot(v_rel, normal)
-                    force_magnitude = max(0, (stiffness * depth) - (damping * v_normal))
-                    reaction += force_magnitude * normal
+                    contact_pts = collision_info[2]
+                    for contact_pt in contact_pts:
+                        r = contact_pt - obj.center
+
+                        v_rot = np.array([-obj.angular_velocity * r[1], obj.angular_velocity * r[0]])
+                        v_rel = obj.velocity + v_rot
+                        v_normal = np.dot(v_rel, normal)
+                        force_mag = max(0, (stiffness * depth) - (damping * v_normal))
+                        f_vec = force_mag * normal /len(contact_pts)
+                        
+                        torque = r[0] * f_vec[1] - r[1] * f_vec[0]
+                
+                        reaction_force += f_vec
+                        reaction_torque += torque
+                        
                 continue
             is_touching, collision_info = self.intersect(obj, other)
             if is_touching:
                 depth = collision_info[0]
                 normal = collision_info[1]
+                contact_pts = collision_info[2]
+                for contact_pt in contact_pts:
+                        r = contact_pt - obj.center
 
-                if other.static:
-                    v_rel = obj.velocity
-                else:
-                    v_rel = obj.velocity - other.velocity
-                v_normal = np.dot(v_rel, normal)
+                        v_rot = np.array([-obj.angular_velocity * r[1], obj.angular_velocity * r[0]])
+                        if other.static:
+                            v_rel = obj.velocity + v_rot
+                        else:
+                            v_rel = obj.velocity + v_rot - other.velocity
+                        v_normal = np.dot(v_rel, normal)
+                        force_mag = max(0, (stiffness * depth) - (damping * v_normal))
+                        f_vec = force_mag * normal /contact_pts.shape[0]
+                        
+                        torque = r[0] * f_vec[1] - r[1] * f_vec[0]
+                
+                        reaction_force += f_vec
+                        reaction_torque += torque
 
-                force_magnitude = max(0, (stiffness * depth) - (damping * v_normal))
-                reaction += force_magnitude * normal
-        return reaction
+        return reaction_force, reaction_torque
 
     @staticmethod
-    def integrate_motion(mass, current_position, current_velocity, net_force, dt):
+    def integrate_motion(mass, current_position, current_velocity, net_force, current_angular_vel, current_angle, net_torque, inertia, dt):
         """
         Performs one step of Forward Euler integration (time-stepping).
         
@@ -204,5 +231,12 @@ class Calculator:
         # 3. Update Position (p_new = p_old + v_new*dt)
         # Using the new velocity for position update is often called Semi-Implicit Euler
         new_position = current_position + new_velocity * dt
+
+        # 4. Calculate Angular Acceleration (alpha = torque / I)
+        angular_accel = net_torque / inertia
+
+        # 5. Update Angular Velocity and Angle
+        new_angular_velocity = current_angular_vel + angular_accel * dt
+        new_angle = current_angle + new_angular_velocity * dt
         
-        return new_position, new_velocity
+        return new_position, new_velocity, new_angle, new_angular_velocity

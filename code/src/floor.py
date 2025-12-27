@@ -3,8 +3,8 @@ from src.staticObject import StaticObject
 
 class Floor(StaticObject):
     def __init__(self, calc):
-        self.vertices_gnd = np.array([[-5., -4.],
-                          [-5.,-1.8],
+        self.vertices_gnd = np.array([[-5., -3.2],
+                          [-5.,-1],
                           [5.,-1.8],
                           [5., -4.]])
 

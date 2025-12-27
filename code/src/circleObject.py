@@ -12,6 +12,9 @@ class CircleObject(DynamicObject):
         self.adhesion_coeff = adhesion
         self.velocity = np.array([.0,.0])
         self.radius = radius  
+        self.inertia = 0.5 * self.mass * (self.radius **2)
+        self.angular_velocity = 0.0
+        self.angle = 0.0
 
         N_POINTS = 30 # number of points to approximate the circle
         
@@ -54,12 +57,17 @@ class CircleObject(DynamicObject):
 
 
     def updateObject(self):
-        net_force = Calculator().calculateForces(self) 
-        self.center, self.velocity = Calculator.integrate_motion(
+        net_force = Calculator().calculateForces(self)[0]
+        net_torque = Calculator().calculateForces(self)[1]
+        self.center, self.velocity, self.angle, self.angular_velocity = Calculator.integrate_motion(
             mass=self.mass,
             current_position=self.center,
             current_velocity=self.velocity,
             net_force=net_force,
+            current_angular_vel=self.angular_velocity,
+            current_angle=self.angle,
+            net_torque=net_torque,
+            inertia=self.inertia,
             dt=0.01
         )
 

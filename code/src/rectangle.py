@@ -4,17 +4,18 @@ from calculator import Calculator
 from src.dynamicObject import DynamicObject
 
 class Square(DynamicObject):
-    def __init__(self, calc, L = 0.25, mass = 3, center = np.array([0,0]), attitude = np.array([[1,0], [0,1]]), adhesion = 0.5):
+    def __init__(self, calc, h = 0.1, w = 0.25, mass = 3, center = np.array([0,0]), attitude = np.array([[1,0], [0,1]]), adhesion = 0.5):
 
         super().__init__(mass, center, calc)
         """takes a file as input, finds a way to draw 2d object from it, square by default"""
-        self.size = L
+        self.inertia = (1/12) * self.mass * (w**2+h**2)
+        self.size = np.array([w, h])
         self.adhesion_coeff = adhesion
         self.attitude = attitude # body to unmoving frame, new_attitude = attitude @ rotation
-        self.vertices_bdy = np.array([[-L/2, -L/2],   # x0, y0
-                                    [-L/2, L/2],   # x1, y1
-                                    [L/2, L/2],   # x2, y2
-                                    [L/2, -L/2]],  # x3, y3
+        self.vertices_bdy = np.array([[-w/2, -h/2],   # x0, y0
+                                    [-w/2, h/2],   # x1, y1
+                                    [w/2, h/2],   # x2, y2
+                                    [w/2, -h/2]],  # x3, y3
                                 np.float64)
         self.vertices_gnd = (self.attitude @ self.vertices_bdy.T).T
         self.nbVertices = len(self.vertices_gnd)
