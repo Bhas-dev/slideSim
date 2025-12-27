@@ -93,7 +93,7 @@ def rotatingSquare(viewer):
 
     # Indexed square
     calc = Calculator()
-    square_inst = Square(calc)
+    square_inst = Rectangle(calc)
     floor_inst = Floor(calc)
     # Create the object
     squareMesh = Mesh2D(square_inst.getPositions(), square_inst.indices, square_inst.colours)

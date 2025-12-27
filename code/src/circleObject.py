@@ -4,9 +4,9 @@ from calculator import Calculator
 from src.dynamicObject import DynamicObject
 
 class CircleObject(DynamicObject):
-    def __init__(self, mass = 3, center = np.array([0.5,0.5]) , static=False, adhesion = 0.5, radius=0.5):
+    def __init__(self, calc, mass = 3, center = np.array([0.5,0.5]) , static=False, adhesion = 0.5, radius=0.5):
 
-        super().__init__(mass, center, static)
+        super().__init__(mass, center, calc)
         """takes a file as input, finds a way to draw 2d object from it, square by default"""
         
         self.adhesion_coeff = adhesion
@@ -70,6 +70,8 @@ class CircleObject(DynamicObject):
             inertia=self.inertia,
             dt=0.01
         )
+
+        self.attitude = self.calculator.rotate(self.attitude, self.angular_velocity * 0.01)
 
         #attitude = Calculator().rotate(self.attitude, np.pi/6)
 
