@@ -117,7 +117,10 @@ class Calculator:
                     contact_points.append(vertex)
 
         if collision_detected:
+            print("THIS IS IT RIGHT NOWWWWWWWWWW")
             return True, [max_penetration, normal, contact_points]
+        else:
+            print()
         
         return False, None
 
@@ -169,6 +172,7 @@ class Calculator:
                         v_rel = obj.velocity + v_rot
                         v_normal = np.dot(v_rel, normal)
                         force_mag = max(0, (stiffness * depth) - (damping * v_normal))
+                        print(force_mag)
                         f_vec = force_mag * normal /len(contact_pts)
                         
                         torque = r[0] * f_vec[1] - r[1] * f_vec[0]

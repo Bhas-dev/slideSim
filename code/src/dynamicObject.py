@@ -1,5 +1,6 @@
 from src.abstractObject import AbstractObject
 import numpy as np
+from src.floor import Floor
 
 class DynamicObject(AbstractObject):
 
@@ -9,11 +10,46 @@ class DynamicObject(AbstractObject):
         self.angular_velocity = 0.0
         self.attitude = np.array([[1,0],[0,1]])
         self.angle = 0.0
-        
+    
+    def resolveIntersections(self, max_iter=5):
+        """Resolves overlaps by projecting the object out of collisions."""
+        for _ in range(max_iter):
+            collision_found = False
+            for other in self.calculator.objects:
+                if other is self: 
+                    continue
+
+                if isinstance(other, Floor):
+                    is_touching, info = self.calculator.intersectFloor(self, other)
+                else:
+                    is_touching, info = self.calculator.intersect(self, other)
+                    
+                if is_touching:
+                    depth, normal = info[0], info[1]
+                    
+                    correction = normal * (depth * 0.9)
+                    self.center += correction
+                    self.vertices_gnd += correction
+                    self.calculateHitbox()
+                    
+                    # 2. Velocity Projection: Cancel velocity into the surface
+                    v_dot_n = np.dot(self.velocity, normal)
+                    """if v_dot_n < 0:
+                        # This stops the object from 'trying' to stay inside the floor
+                        self.velocity -= v_dot_n * normal"""
+                        
+                    # 3. Angular Damping:
+                    self.angular_velocity *= 0.8 # 1->bouncy, 0->nothing
+                    
+                    collision_found = True
+
+            if not collision_found: 
+                break
 
     def updateObject(self):
-        net_force = self.calculator.calculateForces(self)[0]
-        net_torque = self.calculator.calculateForces(self)[1]
+        old_vertices = self.vertices_gnd.copy()
+        result = self.calculator.calculateForces(self)
+        net_force, net_torque = result[0], result[1]
         self.center, self.velocity, self.angle, self.angular_velocity = self.calculator.integrate_motion(
             mass=self.mass,
             current_position=self.center,
@@ -34,9 +70,13 @@ class DynamicObject(AbstractObject):
         for r in range(len(new_vertices_gnd)):
             new_vertices_gnd[r] += self.center
 
-        diff = new_vertices_gnd - self.vertices_gnd
+        #diff = new_vertices_gnd - self.vertices_gnd
         self.vertices_gnd = new_vertices_gnd
         self.calculateHitbox()
+
+        self.resolveIntersections()
+        diff = self.vertices_gnd - old_vertices
+
         # diff = np.array([[0,0],[0,0],[0,0],[0,0]])
         return diff
 

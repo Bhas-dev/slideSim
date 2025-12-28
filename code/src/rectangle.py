@@ -4,7 +4,7 @@ from calculator import Calculator
 from src.dynamicObject import DynamicObject
 
 class Rectangle(DynamicObject):
-    def __init__(self, calc, h = 0.1, w = 0.25, mass = 3, center = np.array([0,0]), attitude = np.array([[1,0], [0,1]]), adhesion = 0.5):
+    def __init__(self, calc, h = 0.1, w = 0.25, mass = 50, center = np.array([0,0]), attitude = np.array([[1,0], [0,1]]), adhesion = 0.5):
 
         super().__init__(mass, center, calc)
         """takes a file as input, finds a way to draw 2d object from it, square by default"""
