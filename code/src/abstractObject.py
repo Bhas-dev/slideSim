@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-
+import numpy as np
 class AbstractObject(ABC):
     def __init__(self, mass, center, calc, static=False):
         self.center = center

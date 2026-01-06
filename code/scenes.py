@@ -25,6 +25,7 @@ from graphics import *
 from dynamics import *
 from geom import *
 from src.circleObject import *
+from src.ramp import *
 
 
 
@@ -95,6 +96,7 @@ def rotatingSquare(viewer):
     calc = Calculator()
     square_inst = Rectangle(calc)
     floor_inst = Floor(calc)
+    ramp_inst = Ramp(calc)
     # Create the object
     squareMesh = Mesh2D(square_inst.getPositions(), square_inst.indices, square_inst.colours)
     # Create the correspondung GPU object
@@ -106,6 +108,10 @@ def rotatingSquare(viewer):
     floorMesh = Mesh2D(floor_inst.getPositions(), floor_inst.indices, floor_inst.colours)
     floorMeshRenderable = Mesh2DRenderable(floorMesh)
     viewer.addRenderable(floorMeshRenderable)
+
+    rampMesh = Mesh2D(ramp_inst.getPositions(), ramp_inst.indices, ramp_inst.colours)
+    rampMeshRenderable = Mesh2DRenderable(rampMesh)
+    viewer.addRenderable(rampMeshRenderable)
     # Create a dynamic system
     dyn = DummyDynamicSystem(squareMesh, square_inst)
     # And add it to the viewer

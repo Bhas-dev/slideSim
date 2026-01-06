@@ -1,5 +1,6 @@
 import numpy as np
 from src.floor import *
+from src.ramp import *
 
 G = 9.81 #m.s-1
 
@@ -38,14 +39,16 @@ class Calculator:
         max_penetration = -0.0001
         best_normal = np.array([0.0, 0.0])
         collision_detected = False
+        contact_points = []
+        
 
         # We check all vertices of A against the edges of B
         # (assuming B is a convex Polygon)
         for vertex in objA.vertices_gnd:
-            for i in range(len(objB.hitbox)):
+            for i in range(1, len(objB.hitbox)-2):
                 # Edge segment defined by points p1 and p2
                 p1 = objB.hitbox[i][0]
-                p2 = objB.vertices_gnd[i][1]
+                p2 = objB.hitbox[i][1]
                 
                 # edge vector and normal
                 edge = p2 - p1
@@ -64,17 +67,16 @@ class Calculator:
                 # If distance is negative, the point is "inside" the surface
                 distance = np.dot(p1_to_v, normal)
                 
-                if distance < 0:
+                if distance <= 0:
                     # We found a penetration!
                     penetration = abs(distance)
-                    if penetration > max_penetration:
+                    if penetration >= max_penetration:
                         max_penetration = penetration
-                        # The normal should point AWAY from the surface
-                        best_normal = normal 
                         collision_detected = True
+                        contact_points.append(vertex)
 
         if collision_detected:
-            return True, [max_penetration, best_normal]
+            return True, [max_penetration, best_normal, contact_points]
         
         return False, None
 
@@ -117,10 +119,7 @@ class Calculator:
                     contact_points.append(vertex)
 
         if collision_detected:
-            print("THIS IS IT RIGHT NOWWWWWWWWWW")
             return True, [max_penetration, normal, contact_points]
-        else:
-            print()
         
         return False, None
 
@@ -145,6 +144,7 @@ class Calculator:
     
     def calculateForces(self, obj):
         weight = np.array([0, -9.81*obj.mass]) # N
+        
         interactions = self.calculateInteractions(obj)
         resulting_force = weight + self.air_resistance(obj) + interactions[0] # adding all forces
         resulting_torque = interactions[1]
@@ -172,7 +172,6 @@ class Calculator:
                         v_rel = obj.velocity + v_rot
                         v_normal = np.dot(v_rel, normal)
                         force_mag = max(0, (stiffness * depth) - (damping * v_normal))
-                        print(force_mag)
                         f_vec = force_mag * normal /len(contact_pts)
                         
                         torque = r[0] * f_vec[1] - r[1] * f_vec[0]
@@ -181,7 +180,10 @@ class Calculator:
                         reaction_torque += torque
                         
                 continue
-            is_touching, collision_info = self.intersect(obj, other)
+            if isinstance(obj, Ramp):
+                is_touching, collision_info = self.intersect(other,obj)
+            else:
+                is_touching, collision_info = self.intersectFloor(obj,other)
             if is_touching:
                 depth = collision_info[0]
                 normal = collision_info[1]
@@ -196,7 +198,7 @@ class Calculator:
                             v_rel = obj.velocity + v_rot - other.velocity
                         v_normal = np.dot(v_rel, normal)
                         force_mag = max(0, (stiffness * depth) - (damping * v_normal))
-                        f_vec = force_mag * normal /contact_pts.shape[0]
+                        f_vec = force_mag * normal /len(contact_pts)
                         
                         torque = r[0] * f_vec[1] - r[1] * f_vec[0]
                 

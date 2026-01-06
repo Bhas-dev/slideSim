@@ -39,7 +39,7 @@ class DynamicObject(AbstractObject):
                         self.velocity -= v_dot_n * normal"""
                         
                     # 3. Angular Damping:
-                    self.angular_velocity *= 0.8 # 1->bouncy, 0->nothing
+                    self.angular_velocity *= 1 # 1->bouncy, 0->nothing
                     
                     collision_found = True
 
