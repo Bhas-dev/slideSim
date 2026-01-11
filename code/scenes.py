@@ -26,6 +26,8 @@ from dynamics import *
 from geom import *
 from src.circleObject import *
 from src.ramp import *
+from src.simpleRamp import *
+from src.rampA import *
 
 
 
@@ -85,8 +87,8 @@ def dynamicTest(viewer):
     # And add it to the viewer
     # Each frame will perform a call to the 'step' method of the viewer
     viewer.addDynamicSystem(dyn)
-    
-def rotatingSquare(viewer):
+
+def rampASquare(viewer):
     """
     @brief Demonstration for a basic dynamic rendering
            Renders a simple square, moved by a dummy dynamic system
@@ -95,14 +97,29 @@ def rotatingSquare(viewer):
     # Indexed square
     calc = Calculator()
     square_inst = Rectangle(calc)
+    print("square hit: ", square_inst.hitbox)
     floor_inst = Floor(calc)
-    ramp_inst = Ramp(calc)
+    #square_two = Rectangle(calc, h = 0.1, w = 0.25, mass = 5000, center = np.array([-0.25,1]), attitude = np.array([[1,0], [0,1]]), adhesion = 0.5)
+    ramp_inst = RampA(calc)
+    print("ramp hit: ", ramp_inst.hitbox)
+
+    print(type(calc.objects[0]))
+    print(type(calc.objects[1]))
+    print(type(calc.objects[2]))
+
+
     # Create the object
     squareMesh = Mesh2D(square_inst.getPositions(), square_inst.indices, square_inst.colours)
     # Create the correspondung GPU object
     squareMeshRenderable = Mesh2DRenderable(squareMesh)
     # Add it to the list of objects to render
     viewer.addRenderable(squareMeshRenderable)
+
+    #square2Mesh = Mesh2D(square_two.getPositions(), square_two.indices, square_two.colours)
+    # Create the correspondung GPU object
+    #square2MeshRenderable = Mesh2DRenderable(square2Mesh)
+    # Add it to the list of objects to render
+    #viewer.addRenderable(square2MeshRenderable)
 
 
     floorMesh = Mesh2D(floor_inst.getPositions(), floor_inst.indices, floor_inst.colours)
@@ -114,9 +131,87 @@ def rotatingSquare(viewer):
     viewer.addRenderable(rampMeshRenderable)
     # Create a dynamic system
     dyn = DummyDynamicSystem(squareMesh, square_inst)
+    #dyn2 = DummyDynamicSystem(square2Mesh, square_two)
     # And add it to the viewer
     # Each frame will perform a call to the 'step' method of the viewer
     viewer.addDynamicSystem(dyn)
+    #viewer.addDynamicSystem(dyn2)
+
+
+def floorOnly(viewer):
+
+    # Indexed square
+    calc = Calculator()
+    square_inst = Rectangle(calc)
+    print("square hit: ", square_inst.hitbox)
+    floor_inst = Floor(calc)
+
+    # Create the object
+    squareMesh = Mesh2D(square_inst.getPositions(), square_inst.indices, square_inst.colours)
+    # Create the correspondung GPU object
+    squareMeshRenderable = Mesh2DRenderable(squareMesh)
+    # Add it to the list of objects to render
+    viewer.addRenderable(squareMeshRenderable)
+
+
+    floorMesh = Mesh2D(floor_inst.getPositions(), floor_inst.indices, floor_inst.colours)
+    floorMeshRenderable = Mesh2DRenderable(floorMesh)
+    viewer.addRenderable(floorMeshRenderable)
+    
+    # Create a dynamic system
+    dyn = DummyDynamicSystem(squareMesh, square_inst)
+    #dyn2 = DummyDynamicSystem(square2Mesh, square_two)
+    # And add it to the viewer
+    # Each frame will perform a call to the 'step' method of the viewer
+    viewer.addDynamicSystem(dyn)
+    #viewer.addDynamicSystem(dyn2)
+
+
+    
+def rotatingSquare(viewer):
+    """
+    @brief Demonstration for a basic dynamic rendering
+           Renders a simple square, moved by a dummy dynamic system
+    """
+
+    # Indexed square
+    calc = Calculator()
+    square_inst = Rectangle(calc)
+    print("square hit: ", square_inst.hitbox)
+    floor_inst = Floor(calc)
+    #square_two = Rectangle(calc, h = 0.1, w = 0.25, mass = 5000, center = np.array([-0.25,1]), attitude = np.array([[1,0], [0,1]]), adhesion = 0.5)
+    ramp_inst = SimpleRamp(calc)
+    print("yaaaaaa: ", ramp_inst.hitbox)
+
+
+    # Create the object
+    squareMesh = Mesh2D(square_inst.getPositions(), square_inst.indices, square_inst.colours)
+    # Create the correspondung GPU object
+    squareMeshRenderable = Mesh2DRenderable(squareMesh)
+    # Add it to the list of objects to render
+    viewer.addRenderable(squareMeshRenderable)
+
+    #square2Mesh = Mesh2D(square_two.getPositions(), square_two.indices, square_two.colours)
+    # Create the correspondung GPU object
+    #square2MeshRenderable = Mesh2DRenderable(square2Mesh)
+    # Add it to the list of objects to render
+    #viewer.addRenderable(square2MeshRenderable)
+
+
+    floorMesh = Mesh2D(floor_inst.getPositions(), floor_inst.indices, floor_inst.colours)
+    floorMeshRenderable = Mesh2DRenderable(floorMesh)
+    viewer.addRenderable(floorMeshRenderable)
+
+    rampMesh = Mesh2D(ramp_inst.getPositions(), ramp_inst.indices, ramp_inst.colours)
+    rampMeshRenderable = Mesh2DRenderable(rampMesh)
+    viewer.addRenderable(rampMeshRenderable)
+    # Create a dynamic system
+    dyn = DummyDynamicSystem(squareMesh, square_inst)
+    #dyn2 = DummyDynamicSystem(square2Mesh, square_two)
+    # And add it to the viewer
+    # Each frame will perform a call to the 'step' method of the viewer
+    viewer.addDynamicSystem(dyn)
+    #viewer.addDynamicSystem(dyn2)
 
 def rodTest(viewer):
 
