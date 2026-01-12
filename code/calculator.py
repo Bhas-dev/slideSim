@@ -46,7 +46,7 @@ class Calculator:
             for subB_indices in [[edge[0] for edge in part] for part in objB.hitbox]:
                 vertsB = [objB.vertices_gnd[i] for i in subB_indices]
                 # 1. Check vertices of A against edges of B
-                hit_A_in_B, info_A = self.check_collision(vertsA, vertsB)
+                hit_A_in_B, info_A = self.check_collision(vertsA, vertsB, False)
                 if hit_A_in_B:
                     collision_detected = True
                     all_contact_pts.extend(info_A[2])
@@ -54,9 +54,8 @@ class Calculator:
                         max_penetration, best_normal = info_A[0], info_A[1]
 
                 # 2. Check vertices of B against edges of A (Prevents falling through corners)
-                hit_B_in_A, info_B = self.check_collision(vertsB, vertsA)
+                hit_B_in_A, info_B = self.check_collision(vertsB, vertsA, True)
                 if hit_B_in_A:
-                    
                     collision_detected = True   
                     all_contact_pts.extend(info_B[2])
                     if info_B[1][1] < best_normal[1] or (info_B[0] > max_penetration and info_B[1][1] <= best_normal[1]):
@@ -112,7 +111,7 @@ class Calculator:
         
         return False, None
 
-    def check_collision(self, vertsA, vertsB):
+    def check_collision(self, vertsA, vertsB, isB):
         """Checks if any vertex of convex A is inside convex B"""
         deepest_depth = -1e9
         best_normal = np.array([0.0, 0.0])
@@ -144,9 +143,10 @@ class Calculator:
                     break
                 else:
                     # Track the shallowest penetration to find the exit vector
-                    if abs(dist) < min_v_depth and normal[1] > 0:
-                        min_v_depth = abs(dist)
-                        v_normal = normal # Direction to push A out of B
+                    if abs(dist) < min_v_depth: # and normal[1] > 0:
+                        if isB or (not isB and normal[1] > 0):
+                            min_v_depth = abs(dist)
+                            v_normal = normal # Direction to push A out of B
 
             if is_inside:
                 points.append(v)
@@ -240,31 +240,6 @@ class Calculator:
         correction = normal * depth
         obj.center += correction
         obj.vertices_gnd += correction
-    
-    def calculateInteractions(self, obj):
-        reaction_force = np.array([.0, .0])
-        reaction_torque = 0.0
-        stiffness = 5000.0
-        damping = 150.0 # Increased for stability
-        
-        for other in self.objects:
-            if other is obj: continue
-                
-            is_touching = False
-            if isinstance(other, Floor):
-                is_touching, collision_info = self.intersectFloor(obj, other)
-            else:
-                is_touching, collision_info = self.intersect(obj, other)
-
-            if is_touching:
-                depth, normal, contact_pts = collision_info
-                
-                # Standard reaction force logic
-                f, t = self.getReaction(obj, other, normal, depth, contact_pts, stiffness, damping)
-                reaction_force += f
-                reaction_torque += t
-        
-        return reaction_force, reaction_torque
 
     @staticmethod
     def integrate_motion(mass, current_position, current_velocity, net_force, current_angular_vel, current_angle, net_torque, inertia, dt):

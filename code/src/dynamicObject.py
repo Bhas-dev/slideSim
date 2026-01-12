@@ -21,7 +21,6 @@ class DynamicObject(AbstractObject):
                 hit, info = self.calculator.intersectFloor(self, other)
             else:
                 hit, info = self.calculator.intersect(self, other)
-
             if not hit:
                 continue
 
