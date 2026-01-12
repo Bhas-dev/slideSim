@@ -58,8 +58,13 @@ class Calculator:
                 if hit_B_in_A:
                     collision_detected = True   
                     all_contact_pts.extend(info_B[2])
-                    if info_B[1][1] < best_normal[1] or (info_B[0] > max_penetration and info_B[1][1] <= best_normal[1]):
-                        max_penetration, best_normal = info_B[0], -info_B[1] # Flip normal
+                    curr_normal = -info_B[1]
+                    if curr_normal[1] > best_normal[1] + 0.01:
+                        max_penetration = info_B[0]
+                        best_normal = curr_normal
+                    elif abs(curr_normal[1] - best_normal[1]) < 0.01 and info_B[0] > max_penetration:
+                        max_penetration = info_B[0]
+                        best_normal = curr_normal
 
         if collision_detected:
             # Deduplicate points
@@ -144,7 +149,8 @@ class Calculator:
                 else:
                     # Track the shallowest penetration to find the exit vector
                     if abs(dist) < min_v_depth: # and normal[1] > 0:
-                        if isB or (not isB and normal[1] > 0):
+                        #if isB or (not isB and normal[1] > 0):
+                        if normal[1]>0:
                             min_v_depth = abs(dist)
                             v_normal = normal # Direction to push A out of B
 
@@ -181,7 +187,7 @@ class Calculator:
         force = obj.mass * np.array([0.0, -G])
         force += self.air_resistance(obj)
 
-        return force, 0.0
+        return force, .0
     
     def resolveCollision(self, obj, other, normal, contact_pts):
         if obj.mass == 0:
@@ -200,7 +206,7 @@ class Calculator:
             v_contact = obj.velocity + self.perp(r) * obj.angular_velocity
             v_n = np.dot(v_contact, normal)
 
-            if v_n >= 0:
+            if v_n >= -0.01:
                 continue  # separating
 
             rn = self.cross2(r, normal)
@@ -237,6 +243,8 @@ class Calculator:
         if obj.mass == 0:
             return
 
+        percent = 0.2 
+        slop = 0.01
         correction = normal * depth
         obj.center += correction
         obj.vertices_gnd += correction

@@ -6,7 +6,7 @@ from src.dynamicObject import DynamicObject
 class Rectangle(DynamicObject):
     def __init__(self, calc, h = 0.1, w = 0.25, mass = 5, center = np.array([-2,1]), attitude = np.array([[1,0], [0,1]]), adhesion = 0.5):
 
-        super().__init__(mass, center, calc)
+        super().__init__(mass, center, calc, attitude = attitude)
         """takes a file as input, finds a way to draw 2d object from it, square by default"""
         self.inertia = (1/12) * self.mass * (w**2+h**2)
         self.size = np.array([w, h])

@@ -6,7 +6,7 @@ class SimpleRamp(StaticObject):
 
         self.vertices_gnd = np.array([[-5., -2],
                           [-5.,1],
-                          [-3.5,-0.5],
+                          [-3.5,-0.25],
                           [-2., -0.5],
                           [-1.5, .0],
                           [-1.5, -2],
