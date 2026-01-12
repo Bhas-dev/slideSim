@@ -20,11 +20,11 @@
 
 import numpy as np
 from src.rectangle import *
+from src.circle import *
 from src.floor import *
 from graphics import *
 from dynamics import *
 from geom import *
-from src.circleObject import *
 from src.ramp import *
 from src.simpleRamp import *
 from src.rampA import *
@@ -96,7 +96,7 @@ def rampASquare(viewer):
 
     # Indexed square
     calc = Calculator()
-    square_inst = Rectangle(calc)
+    square_inst = Rectangle(calc, attitude= np.array([[np.sqrt(2)/2, np.sqrt(2)/2],[-np.sqrt(2)/2, np.sqrt(2)/2]]))
     print("square hit: ", square_inst.hitbox)
     floor_inst = Floor(calc)
     #square_two = Rectangle(calc, h = 0.1, w = 0.25, mass = 5000, center = np.array([-0.25,1]), attitude = np.array([[1,0], [0,1]]), adhesion = 0.5)
@@ -221,7 +221,11 @@ def slidingSquare(viewer):
 
     # Indexed square
     calc = Calculator()
+<<<<<<< HEAD
     square_inst = Rectangle(calc, center=np.array([-2.5, 0]), attitude= np.array([[np.sqrt(2)/2, np.sqrt(2)/2],[-np.sqrt(2)/2, np.sqrt(2)/2]]))
+=======
+    square_inst = Rectangle(calc, center=np.array([-2.5, 0.5]), attitude= np.array([[np.sqrt(2)/2, np.sqrt(2)/2],[-np.sqrt(2)/2, np.sqrt(2)/2]]))
+>>>>>>> 465ee88d8491c3296eb5a0561fbf845fa452304e
     floor_inst = Floor(calc)
     ramp_inst = Ramp(calc)
     # Create the object
