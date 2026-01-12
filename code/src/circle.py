@@ -81,6 +81,43 @@ class Circle(DynamicObject):
         self.calculateHitbox()
         return diff"""
         
+    def updateObject(self):
+        old_vertices = self.vertices_gnd.copy()
+        force, torque = self.calculator.calculateForces(self)
+        self.center, self.velocity, self.angle = self.calculator.integrate_motion(
+            self.mass,
+            self.center,
+            self.velocity,
+            force,
+            self.angular_velocity,
+            self.angle,
+            torque,
+            self.inertia,
+            dt=0.01
+        )
+        c = np.cos(self.angle)
+        s = np.sin(self.angle)
+        self.attitude = np.array([
+            [c, -s],
+            [s,  c]
+        ])
+
+        # self.attitude = self.calculator.rotate(self.attitude, np.pi/6)
+
+        new_vertices_gnd = (self.attitude @ self.vertices_bdy.T).T
+
+        for r in range(len(new_vertices_gnd)):
+            new_vertices_gnd[r] += self.center
+
+        #diff = new_vertices_gnd - self.vertices_gnd
+        self.vertices_gnd = new_vertices_gnd
+        #self.calculateHitbox()
+
+        self.resolveIntersections()
+        diff = self.vertices_gnd - old_vertices
+        
+        # diff = np.array([[0,0],[0,0],[0,0],[0,0]])
+        return diff
         
     
 

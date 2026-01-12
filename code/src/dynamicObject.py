@@ -5,7 +5,7 @@ import glfw
 
 class DynamicObject(AbstractObject):
 
-    def __init__(self, mass, center, calc, velocity = np.array([.0, .0]), attitude = np.array([[1,0],[0,1]])):
+    def __init__(self, mass, center, calc, velocity = np.array([0, 0]), attitude = np.array([[1,0],[0,1]])):
         super().__init__(mass, center, calc)
         self.velocity = velocity
         self.angular_velocity = 0.0
