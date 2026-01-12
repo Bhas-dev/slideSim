@@ -245,6 +245,38 @@ def slidingSquare(viewer):
     # Each frame will perform a call to the 'step' method of the viewer
     viewer.addDynamicSystem(dyn)
 
+def slidingCircle(viewer):
+    """
+    @brief Demonstration for a basic dynamic rendering
+           Renders a simple square, moved by a dummy dynamic system
+    """
+
+    # Indexed square
+    calc = Calculator()
+    circle_inst = Circle(calc, center=np.array([-2.5, 0.5]), attitude= np.array([[np.sqrt(2)/2, np.sqrt(2)/2],[-np.sqrt(2)/2, np.sqrt(2)/2]]))
+    floor_inst = Floor(calc)
+    ramp_inst = Ramp(calc)
+    # Create the object
+    circleMesh = Mesh2D(circle_inst.getPositions(), circle_inst.indices, circle_inst.colours)
+    # Create the correspondung GPU object
+    circleMeshRenderable = Mesh2DRenderable(circleMesh)
+    # Add it to the list of objects to render
+    viewer.addRenderable(circleMeshRenderable)
+
+
+    floorMesh = Mesh2D(floor_inst.getPositions(), floor_inst.indices, floor_inst.colours)
+    floorMeshRenderable = Mesh2DRenderable(floorMesh)
+    viewer.addRenderable(floorMeshRenderable)
+
+    rampMesh = Mesh2D(ramp_inst.getPositions(), ramp_inst.indices, ramp_inst.colours)
+    rampMeshRenderable = Mesh2DRenderable(rampMesh)
+    viewer.addRenderable(rampMeshRenderable)
+    # Create a dynamic system
+    dyn = DummyDynamicSystem(circleMesh, circle_inst)
+    # And add it to the viewer
+    # Each frame will perform a call to the 'step' method of the viewer
+    viewer.addDynamicSystem(dyn)
+
 def rodTest(viewer):
 
     """
