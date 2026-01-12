@@ -221,11 +221,7 @@ def slidingSquare(viewer):
 
     # Indexed square
     calc = Calculator()
-<<<<<<< HEAD
     square_inst = Rectangle(calc, center=np.array([-2.5, 0]), attitude= np.array([[np.sqrt(2)/2, np.sqrt(2)/2],[-np.sqrt(2)/2, np.sqrt(2)/2]]))
-=======
-    square_inst = Rectangle(calc, center=np.array([-2.5, 0.5]), attitude= np.array([[np.sqrt(2)/2, np.sqrt(2)/2],[-np.sqrt(2)/2, np.sqrt(2)/2]]))
->>>>>>> 465ee88d8491c3296eb5a0561fbf845fa452304e
     floor_inst = Floor(calc)
     ramp_inst = Ramp(calc)
     # Create the object
