@@ -4,11 +4,12 @@ from calculator import Calculator
 from src.dynamicObject import DynamicObject
 
 class Rectangle(DynamicObject):
-    def __init__(self, calc, h = 0.1, w = 0.25, mass = 5, center = np.array([-2,1]), attitude = np.array([[1,0], [0,1]]), adhesion = 0.5):
+    def __init__(self, calc, h = 0.1, w = 0.25, mass = 5, center = np.array([-2,1]), attitude = np.array([[1,0], [0,1]]), adhesion = 0.2):
 
         super().__init__(mass, center, calc)
         """takes a file as input, finds a way to draw 2d object from it, square by default"""
         self.inertia = (1/12) * self.mass * (w**2+h**2)
+        print("Rectangle inertia:", self.inertia)
         self.size = np.array([w, h])
         self.adhesion_coeff = adhesion
         self.attitude = attitude # body to unmoving frame, new_attitude = attitude @ rotation

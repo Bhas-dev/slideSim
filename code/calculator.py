@@ -23,12 +23,22 @@ class Calculator:
     
     def friction_coef(self, obj1, obj2):
         """ Calculates the friction coefficient between two objects."""
-        return (0.05 + 0.8 * min(obj1.adhesion_coeff, obj2.adhesion_coeff))
+        coefA = obj1.adhesion_coeff 
+        coefB = obj2.adhesion_coeff
+        if coefA<0 or coefB<0:
+            return 0.0
+        return (np.sqrt(coefA * coefB))
     
     def friction_force(self, obj, friction_coef):
         """ Calculates the friction force acting on the object."""
-        angle = np.arctan2(obj.attitude[1][0], obj.attitude[0][0])
-        return (- friction_coef * obj.mass * G * np.cos(angle) * obj.velocity/np.linalg.norm(obj.velocity))
+        norm_vel = np.linalg.norm(obj.velocity)
+        if norm_vel < 1e-5:
+            return np.array([0.0, 0.0])
+
+        angle = np.arctan2(obj.attitude[1][0], obj.attitude[0][0]) 
+        if angle<0 :
+            angle+= np.pi/2 # angle of the normal to the surface
+        return (- friction_coef * obj.mass * G * np.cos(angle) * obj.velocity/norm_vel)
 
     def intersect(self, objA, objB):
         """
