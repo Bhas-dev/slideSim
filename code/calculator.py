@@ -178,86 +178,68 @@ class Calculator:
         return R @ orientation
     
     def calculateForces(self, obj):
-        weight = np.array([0, -9.81*obj.mass]) # N
-        
-        interactions = self.calculateInteractions(obj)
-        resulting_force = weight + self.air_resistance(obj) + interactions[0] # adding all forces
-        resulting_torque = interactions[1]
-        return resulting_force, resulting_torque
-    
-    def getReaction(self, obj, other, normal, depth, contact_pts, stiffness, damping):
-        reaction_force, reaction_torque = 0, 0
-        for contact_pt in contact_pts:
-            r = contact_pt - obj.center
+        force = obj.mass * np.array([0.0, -G])
+        force += self.air_resistance(obj)
 
-            v_rot = np.array([-obj.angular_velocity * r[1], obj.angular_velocity * r[0]])
-            v_rel = obj.velocity + v_rot
-            v_normal = np.dot(v_rel, normal)
-            force_mag = max(0, (stiffness * depth) - (damping * v_normal))
-            f_vec = force_mag * normal /len(contact_pts)
-            
-            torque = r[0] * f_vec[1] - r[1] * f_vec[0]
+        return force, 0.0
     
-            reaction_force += f_vec
-            reaction_torque += torque
-        return reaction_force, reaction_torque
-    
-    """def calculateInteractions(self, obj):
-        reaction_force = np.array([.0,.0])
-        reaction_torque = 0.0
-        stiffness = 5000.0 # hardness
-        damping = 100.0 # reduce bounce
-        for r in range(len(self.objects)):
-            if r == obj.calcIdx:
+    def resolveCollision(self, obj, other, normal, contact_pts):
+        if obj.mass == 0:
+            return
+
+        inv_mass = 1.0 / obj.mass
+        inv_inertia = 1.0 / obj.inertia
+
+        restitution = obj.restitution
+        friction = self.friction_coef(obj, other)
+
+        for pt in contact_pts:
+            r = pt - obj.center
+
+            # velocity at contact point
+            v_contact = obj.velocity + self.perp(r) * obj.angular_velocity
+            v_n = np.dot(v_contact, normal)
+
+            if v_n >= 0:
+                continue  # separating
+
+            rn = self.cross2(r, normal)
+            denom = inv_mass + (rn * rn) * inv_inertia
+
+            # --- normal impulse ---
+            Jn = -(1 + restitution) * v_n / denom
+            impulse_n = Jn * normal
+
+            obj.velocity += impulse_n * inv_mass
+            obj.angular_velocity += self.cross2(r, impulse_n) * inv_inertia
+
+            # --- friction impulse ---
+            v_contact = obj.velocity + self.perp(r) * obj.angular_velocity
+            tangent = v_contact - np.dot(v_contact, normal) * normal
+
+            speed = np.linalg.norm(tangent)
+            if speed < 1e-6:
                 continue
-            other = self.objects[r]
-            if isinstance(other, Floor):
-                is_touching, collision_info = self.intersectFloor(obj, other)
-                if is_touching:
-                    depth = collision_info[0]
-                    normal = collision_info[1]
-                    contact_pts = collision_info[2]
-                    
-                    reaction = self.getReaction(obj, other, normal, depth, contact_pts, stiffness, damping)
 
-                    v_rot = np.array([-obj.angular_velocity * r[1], obj.angular_velocity * r[0]])
-                    v_rel = obj.velocity + v_rot
-                    v_normal = np.dot(v_rel, normal)
-                    force_mag = max(0, (stiffness * depth) - (damping * v_normal))
-                    f_vec = force_mag * normal /len(contact_pts)
-                    
-                    torque = r[0] * f_vec[1] - r[1] * f_vec[0]
-            
-                    reaction_force += f_vec
-                    reaction_torque += torque
-                        
-                continue
-            if isinstance(obj, Ramp):
-                is_touching, collision_info = self.intersect(other,obj)
-            else:
-                is_touching, collision_info = self.intersectFloor(obj,other)
-            if is_touching:
-                depth = collision_info[0]
-                normal = collision_info[1]
-                contact_pts = collision_info[2]
-                for contact_pt in contact_pts:
-                        r = contact_pt - obj.center
+            tangent /= speed
+            rt = self.cross2(r, tangent)
+            denom_t = inv_mass + (rt * rt) * inv_inertia
 
-                        v_rot = np.array([-obj.angular_velocity * r[1], obj.angular_velocity * r[0]])
-                        if other.static:
-                            v_rel = obj.velocity + v_rot
-                        else:
-                            v_rel = obj.velocity + v_rot - other.velocity
-                        v_normal = np.dot(v_rel, normal)
-                        force_mag = max(0, (stiffness * depth) - (damping * v_normal))
-                        f_vec = force_mag * normal /len(contact_pts)
-                        
-                        torque = r[0] * f_vec[1] - r[1] * f_vec[0]
-                
-                        reaction_force += f_vec
-                        reaction_torque += torque
+            Jt = -np.dot(v_contact, tangent) / denom_t
+            Jt = np.clip(Jt, -friction * Jn, friction * Jn)
 
-        return reaction_force, reaction_torque"""
+            impulse_t = Jt * tangent
+
+            obj.velocity += impulse_t * inv_mass
+            obj.angular_velocity += self.cross2(r, impulse_t) * inv_inertia
+    
+    def positionalCorrection(self, obj, normal, depth):
+        if obj.mass == 0:
+            return
+
+        correction = normal * depth
+        obj.center += correction
+        obj.vertices_gnd += correction
     
     def calculateInteractions(self, obj):
         reaction_force = np.array([.0, .0])
@@ -281,7 +263,7 @@ class Calculator:
                 f, t = self.getReaction(obj, other, normal, depth, contact_pts, stiffness, damping)
                 reaction_force += f
                 reaction_torque += t
-
+        
         return reaction_force, reaction_torque
 
     @staticmethod
@@ -323,3 +305,11 @@ class Calculator:
         new_angle = current_angle + new_angular_velocity * dt
         
         return new_position, new_velocity, new_angle, new_angular_velocity
+
+    @staticmethod
+    def cross2(a, b):
+        return a[0] * b[1] - a[1] * b[0]
+
+    @staticmethod
+    def perp(v):
+        return np.array([-v[1], v[0]])

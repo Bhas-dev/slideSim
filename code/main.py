@@ -36,7 +36,7 @@ def main():
     #indexedTest(viewer)
     #rampASquare(viewer)
     
-    rotatingSquare(viewer)
+    #rotatingSquare(viewer)
     slidingSquare(viewer)
     #floorOnly(viewer)
     

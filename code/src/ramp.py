@@ -10,54 +10,38 @@ class Ramp(StaticObject):
         t = np.linspace(0, 1, 30)
         print(t)
         # Formule de Bézier quadratique
-        surface_points = [[-4,-2]]
+        surface_points = [[-4.0, -2.0]]
         for val in t:
             point = [0.0, 0.0]
             point[0] = (1-val)**2 * p_start[0] + 2*(1-val)*val * p_ctrl[0] + val**2 * p_end[0]
             point[1] = (1-val)**2 * p_start[1] + 2*(1-val)*val * p_ctrl[1] + val**2 * p_end[1]
             surface_points.append(point)
-        surface_points.append([1,-2])
+            
+        self.length = len(surface_points)-1
+        for i in range(self.length-1):
+            pt = [surface_points[self.length-i-1][0], -2.0]
+            surface_points.append(pt)
+
+        print(surface_points)
+        print(self.length)
 
         self.vertices_gnd = np.array(surface_points)
         # Define the colours for each vertex
 
         self.colours = np.array([.200, .200, .200,  # (r, g, b) to make gray
         ])
-        self.colours = np.tile(self.colours, 32)
+        self.colours = np.tile(self.colours, self.length*2)
 
          # Define the triangles for the ramp mesh
+        triangles = [0,1,2]
+        for i in range(1,(self.length)//2):
+            triangles.extend([0, i, i+1])
 
-        self.indices = np.array([0, 1, 2,
-                                0, 2, 3,
-                                0, 3, 4,
-                                0, 4, 5,
-                                0, 5, 6,
-                                0, 6, 7,
-                                0, 7, 8,
-                                0, 8, 9,
-                                0, 9, 10,
-                                0, 10, 11,
-                                0, 11, 12,
-                                0, 12, 13,
-                                0, 13, 14,
-                                0, 14, 15,
-                                0, 15, 31,
-                                31, 15, 16,
-                                31, 16, 17,
-                                31, 17, 18,
-                                31, 18, 19,
-                                31, 19, 20,
-                                31, 20, 21,
-                                31, 21, 22,
-                                31, 22, 23,
-                                31, 23, 24,
-                                31, 24, 25,
-                                31, 25, 26,
-                                31, 26, 27,
-                                31, 27, 28,
-                                31, 28, 29,
-                                31, 29 , 30
-                                ])
+        triangles.extend([0, self.length//2, self.length])
+
+        for i in range((self.length)//2+1, self.length-1):
+            triangles.extend([i, i+1, self.length])
+        self.indices = np.array(triangles)
         self.nbVertices = len(self.vertices_gnd)
         self.hitbox = []
         self.setHitbox()
