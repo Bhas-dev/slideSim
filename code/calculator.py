@@ -29,16 +29,6 @@ class Calculator:
             return 0.0
         return (np.sqrt(coefA * coefB))
     
-    def friction_force(self, obj, friction_coef):
-        """ Calculates the friction force acting on the object."""
-        norm_vel = np.linalg.norm(obj.velocity)
-        if norm_vel < 1e-5:
-            return np.array([0.0, 0.0])
-
-        angle = np.arctan2(obj.attitude[1][0], obj.attitude[0][0]) 
-        if angle<0 :
-            angle+= np.pi/2 # angle of the normal to the surface
-        return (- friction_coef * obj.mass * G * np.cos(angle) * obj.velocity/norm_vel)
 
     def intersect(self, objA, objB):
         """
@@ -290,15 +280,9 @@ class Calculator:
         # Using the new velocity for position update is often called Semi-Implicit Euler
         new_position = current_position + new_velocity * dt
 
-        # 4. Calculate Angular Acceleration (alpha = torque / I)
-        angular_accel = net_torque / inertia
-
-        # 5. Update Angular Velocity and Angle
-        new_angular_velocity = current_angular_vel + angular_accel * dt
-        new_angle = current_angle + new_angular_velocity * dt
+        new_angle = current_angle + current_angular_vel * dt
         
-        return new_position, new_velocity, new_angle, new_angular_velocity
-
+        return new_position, new_velocity, new_angle
     @staticmethod
     def cross2(a, b):
         return a[0] * b[1] - a[1] * b[0]
