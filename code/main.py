@@ -34,7 +34,8 @@ def main():
     # Loading the scene
     
     #indexedTest(viewer)
-    rotatingSquare(viewer)
+    #rotatingSquare(viewer)
+    slidingSquare(viewer)
     #rodTest(viewer)
     
     # Main loop

@@ -10,7 +10,7 @@ class Ramp(StaticObject):
         t = np.linspace(0, 1, 30)
         print(t)
         # Formule de Bézier quadratique
-        surface_points = [[-5,-2]]
+        surface_points = [[-4,-2]]
         for val in t:
             point = [0.0, 0.0]
             point[0] = (1-val)**2 * p_start[0] + 2*(1-val)*val * p_ctrl[0] + val**2 * p_end[0]
