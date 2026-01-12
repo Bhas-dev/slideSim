@@ -17,6 +17,9 @@ class Floor(StaticObject):
                         0, 2, 3])
         self.nbVertices = len(self.vertices_gnd)
         self.hitbox = []
-        self.calculateHitbox()
+        self.setHitbox()
         super().__init__(calc)
+
+    def setHitbox(self):
+        self.hitbox = [[[0,1], [1,2], [2,3], [3,4]]]
 

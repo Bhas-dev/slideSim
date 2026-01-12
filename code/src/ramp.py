@@ -19,8 +19,7 @@ class Ramp(StaticObject):
         surface_points.append([1,-2])
 
         self.vertices_gnd = np.array(surface_points)
-
-         # Define the colours for each vertex
+        # Define the colours for each vertex
 
         self.colours = np.array([.200, .200, .200,  # (r, g, b) to make gray
         ])
@@ -61,5 +60,5 @@ class Ramp(StaticObject):
                                 ])
         self.nbVertices = len(self.vertices_gnd)
         self.hitbox = []
-        self.calculateHitbox()
+        self.setHitbox()
         super().__init__(calc)

@@ -32,51 +32,40 @@ class Calculator:
 
     def intersect(self, objA, objB):
         """
-        Checks if objA is colliding with objB.
-        Returns: (bool, collision_data)
-        collision_data = {'depth': float, 'normal': np.array([x, y])}
+        Checks collision between two objects with multiple convex sub-polygons.
+        hitbox format: [sub_poly1, sub_poly2, ...] where sub_poly is [idx1, idx2, idx3]
         """
-        max_penetration = -0.0001
+        max_penetration = -1e9
         best_normal = np.array([0.0, 0.0])
         collision_detected = False
-        contact_points = []
-        
+        all_contact_pts = []
 
-        # We check all vertices of A against the edges of B
-        # (assuming B is a convex Polygon)
-        for vertex in objA.vertices_gnd:
-            for i in range(1, len(objB.hitbox)-2):
-                # Edge segment defined by points p1 and p2
-                p1 = objB.hitbox[i][0]
-                p2 = objB.hitbox[i][1]
-                
-                # edge vector and normal
-                edge = p2 - p1
-                normal = np.array([-edge[1], edge[0]])
+        for subA_indices in [[edge[0] for edge in part] for part in objA.hitbox]:
+            vertsA = [objA.vertices_gnd[i] for i in subA_indices]
             
-                norm_val = np.linalg.norm(normal) # Normalising
-                if norm_val == 0: # edge is a point
-                    continue
-                normal /= norm_val
-                
-                # Check if the vertex is "inside" the edge
+            for subB_indices in [[edge[0] for edge in part] for part in objB.hitbox]:
+                vertsB = [objB.vertices_gnd[i] for i in subB_indices]
+                # 1. Check vertices of A against edges of B
+                hit_A_in_B, info_A = self.check_collision(vertsA, vertsB)
+                if hit_A_in_B:
+                    collision_detected = True
+                    all_contact_pts.extend(info_A[2])
+                    if info_A[1][1] > best_normal[1] or (info_A[0] > max_penetration and info_A[1][1] >= best_normal[1]):
+                        max_penetration, best_normal = info_A[0], info_A[1]
 
-                p1_to_v = vertex - p1
-                
-                # Dot product gives the signed distance to the line
-                # If distance is negative, the point is "inside" the surface
-                distance = np.dot(p1_to_v, normal)
-                
-                if distance <= 0:
-                    # We found a penetration!
-                    penetration = abs(distance)
-                    if penetration >= max_penetration:
-                        max_penetration = penetration
-                        collision_detected = True
-                        contact_points.append(vertex)
+                # 2. Check vertices of B against edges of A (Prevents falling through corners)
+                hit_B_in_A, info_B = self.check_collision(vertsB, vertsA)
+                if hit_B_in_A:
+                    
+                    collision_detected = True   
+                    all_contact_pts.extend(info_B[2])
+                    if info_B[1][1] < best_normal[1] or (info_B[0] > max_penetration and info_B[1][1] <= best_normal[1]):
+                        max_penetration, best_normal = info_B[0], -info_B[1] # Flip normal
 
         if collision_detected:
-            return True, [max_penetration, best_normal, contact_points]
+            # Deduplicate points
+            unique_pts = list({tuple(p): p for p in all_contact_pts}.values())
+            return True, [max_penetration, best_normal, unique_pts]
         
         return False, None
 
@@ -86,7 +75,7 @@ class Calculator:
         best_normal = np.array([0.0, 0.0])
         collision_detected = False
         contact_points = []
-        line = floor_inst.hitbox[1]
+        line = floor_inst.vertices_gnd[floor_inst.hitbox[0][1]]
 
         for vertex in obj.vertices_gnd:
             # Edge segment defined by points p1 and p2
@@ -123,6 +112,52 @@ class Calculator:
         
         return False, None
 
+    def check_collision(self, vertsA, vertsB):
+        """Checks if any vertex of convex A is inside convex B"""
+        deepest_depth = -1e9
+        best_normal = np.array([0.0, 0.0])
+        points = []
+        
+        # Check all vertices of A
+        for v in vertsA:
+            is_inside = True
+            min_v_depth = float('inf')
+            v_normal = np.array([0.0, 0.0])
+            
+            # Check against all edges of B
+            for i in range(len(vertsB)):
+                p1 = vertsB[i]
+                p2 = vertsB[(i + 1) % len(vertsB)]
+                
+                edge = p2 - p1
+                # Outward facing normal (Assumes CCW winding)
+                normal = np.array([-edge[1], edge[0]])
+                norm_len = np.linalg.norm(normal)
+                if norm_len < 1e-9: continue
+                normal /= norm_len
+                
+                # Distance from point to edge
+                dist = np.dot(v - p1, normal)
+                
+                if dist > 0.001: # Point is outside this edge (with small epsilon)
+                    is_inside = False
+                    break
+                else:
+                    # Track the shallowest penetration to find the exit vector
+                    if abs(dist) < min_v_depth and normal[1] > 0:
+                        min_v_depth = abs(dist)
+                        v_normal = normal # Direction to push A out of B
+
+            if is_inside:
+                points.append(v)
+                if min_v_depth > deepest_depth:
+                    deepest_depth = min_v_depth
+                    best_normal = v_normal
+                    
+        if points:
+            return True, [deepest_depth, best_normal, points]
+        return False, None
+
     def air_resistance(self, obj):
         """ Calculates the air resistance (drag) force acting on the object."""
         drag_coef = 0.47 #spherical object
@@ -150,7 +185,24 @@ class Calculator:
         resulting_torque = interactions[1]
         return resulting_force, resulting_torque
     
-    def calculateInteractions(self, obj):
+    def getReaction(self, obj, other, normal, depth, contact_pts, stiffness, damping):
+        reaction_force, reaction_torque = 0, 0
+        for contact_pt in contact_pts:
+            r = contact_pt - obj.center
+
+            v_rot = np.array([-obj.angular_velocity * r[1], obj.angular_velocity * r[0]])
+            v_rel = obj.velocity + v_rot
+            v_normal = np.dot(v_rel, normal)
+            force_mag = max(0, (stiffness * depth) - (damping * v_normal))
+            f_vec = force_mag * normal /len(contact_pts)
+            
+            torque = r[0] * f_vec[1] - r[1] * f_vec[0]
+    
+            reaction_force += f_vec
+            reaction_torque += torque
+        return reaction_force, reaction_torque
+    
+    """def calculateInteractions(self, obj):
         reaction_force = np.array([.0,.0])
         reaction_torque = 0.0
         stiffness = 5000.0 # hardness
@@ -165,19 +217,19 @@ class Calculator:
                     depth = collision_info[0]
                     normal = collision_info[1]
                     contact_pts = collision_info[2]
-                    for contact_pt in contact_pts:
-                        r = contact_pt - obj.center
+                    
+                    reaction = self.getReaction(obj, other, normal, depth, contact_pts, stiffness, damping)
 
-                        v_rot = np.array([-obj.angular_velocity * r[1], obj.angular_velocity * r[0]])
-                        v_rel = obj.velocity + v_rot
-                        v_normal = np.dot(v_rel, normal)
-                        force_mag = max(0, (stiffness * depth) - (damping * v_normal))
-                        f_vec = force_mag * normal /len(contact_pts)
-                        
-                        torque = r[0] * f_vec[1] - r[1] * f_vec[0]
-                
-                        reaction_force += f_vec
-                        reaction_torque += torque
+                    v_rot = np.array([-obj.angular_velocity * r[1], obj.angular_velocity * r[0]])
+                    v_rel = obj.velocity + v_rot
+                    v_normal = np.dot(v_rel, normal)
+                    force_mag = max(0, (stiffness * depth) - (damping * v_normal))
+                    f_vec = force_mag * normal /len(contact_pts)
+                    
+                    torque = r[0] * f_vec[1] - r[1] * f_vec[0]
+            
+                    reaction_force += f_vec
+                    reaction_torque += torque
                         
                 continue
             if isinstance(obj, Ramp):
@@ -204,6 +256,31 @@ class Calculator:
                 
                         reaction_force += f_vec
                         reaction_torque += torque
+
+        return reaction_force, reaction_torque"""
+    
+    def calculateInteractions(self, obj):
+        reaction_force = np.array([.0, .0])
+        reaction_torque = 0.0
+        stiffness = 5000.0
+        damping = 150.0 # Increased for stability
+        
+        for other in self.objects:
+            if other is obj: continue
+                
+            is_touching = False
+            if isinstance(other, Floor):
+                is_touching, collision_info = self.intersectFloor(obj, other)
+            else:
+                is_touching, collision_info = self.intersect(obj, other)
+
+            if is_touching:
+                depth, normal, contact_pts = collision_info
+                
+                # Standard reaction force logic
+                f, t = self.getReaction(obj, other, normal, depth, contact_pts, stiffness, damping)
+                reaction_force += f
+                reaction_torque += t
 
         return reaction_force, reaction_torque
 
