@@ -39,7 +39,7 @@ def main():
     #rotatingSquare(viewer)
     slidingSquare(viewer)
     #floorOnly(viewer)
-    #slidingCircle(viewer)
+    slidingCircle(viewer)
     
     #rodTest(viewer)
     

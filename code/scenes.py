@@ -253,7 +253,7 @@ def slidingCircle(viewer):
 
     # Indexed square
     calc = Calculator()
-    circle_inst = Circle(calc, center=np.array([-2.5, 0.5]), attitude= np.array([[np.sqrt(2)/2, np.sqrt(2)/2],[-np.sqrt(2)/2, np.sqrt(2)/2]]))
+    circle_inst = Circle(calc, center=np.array([-2.5, 0]), attitude= np.array([[np.sqrt(2)/2, np.sqrt(2)/2],[-np.sqrt(2)/2, np.sqrt(2)/2]]))
     floor_inst = Floor(calc)
     ramp_inst = Ramp(calc)
     # Create the object

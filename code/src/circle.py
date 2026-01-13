@@ -12,7 +12,7 @@ class Circle(DynamicObject):
         self.radius = radius
         self.inertia = 0.5 * self.mass * (self.radius **2)
         self.restitution = 0.7
-        N_POINTS = 10 # number of points to approximate the circle
+        N_POINTS = 15 # number of points to approximate the circle
         
         self.nbVertices = N_POINTS + 1
         angles = np.linspace(0, 2 * np.pi, N_POINTS, endpoint=False)
